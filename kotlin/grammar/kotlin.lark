@@ -1,0 +1,9 @@
+start: WORD
+
+%ignore " "
+%ignore "\n"
+%ignore LINECMT
+%ignore MULTICMT
+
+%import common (WORD)
+%import .utils (LINECMT, MULTICMT)
