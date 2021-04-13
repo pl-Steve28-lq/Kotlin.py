@@ -1,2 +1,5 @@
-LINECMT: /\/\/[^\n]*/
-MULTICMT: /\/\*(.|\n)*\*\//
+LINECMT: CPP_COMMENT
+MULTICMT: C_COMMENT
+MDIGIT: (DIGIT | "_")
+
+%import common (DIGIT, CPP_COMMENT, C_COMMENT)

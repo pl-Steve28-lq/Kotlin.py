@@ -1,9 +1,29 @@
-start: WORD
+start: expr
+
+number: LONG | INT | FLOAT | DOUBLE | HEX | BIN
+INT: "1".."9" MDIGIT*
+LONG: INT "L"
+DOUBLE: (INT "." MDIGIT+) | ("." MDIGIT+)
+FLOAT: DOUBLE ("f" | "F")
+HEX: "0x" (HEXDIGIT | "_")+
+BIN: "0b" ("0"|"1")+
+
+string: /"(.|(\.))*?"/
+longstring: /"""(.|(\.)|\n)*?"""/
+char: /'.|(\.)'/
+strings: string | longstring | char
+
+var: CNAME
+
+prop: expr "." var
+param: "(" [expr] [("," expr)*] ")"
+call: expr param
+expr: number | strings | var | "(" expr ")" | prop | call
 
 %ignore " "
 %ignore "\n"
 %ignore LINECMT
 %ignore MULTICMT
 
-%import common (WORD)
-%import .utils (LINECMT, MULTICMT)
+%import common (CNAME, HEXDIGIT)
+%import .utils (LINECMT, MULTICMT, MDIGIT)
