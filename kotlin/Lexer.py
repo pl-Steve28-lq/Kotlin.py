@@ -1,7 +1,7 @@
 from lark import Lark
 
-L = Lark.open('./grammar/kotlin.lark', parser='lalr')
-q=L.parse
+L = Lark.open('./grammar/kotlin.lark', debug=True)
+q=lambda x:tree(L.parse(x))
 
 def tree(s, indent=0):
     ind = "|   "*indent
@@ -9,5 +9,3 @@ def tree(s, indent=0):
     for i in s.children:
         if hasattr(i, 'children'): tree(i, indent+1)
         else: print(f"{ind}|   {i.type} ( {i.value} )")
-
-genNoIncl = lambda ch: f"^({''.join(map(lambda x: f'(?!{x})', ch))}.)*$"

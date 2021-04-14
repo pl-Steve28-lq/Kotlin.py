@@ -1,4 +1,29 @@
-start: expr
+%import common (CNAME, HEXDIGIT)
+%import .utils (LINECMT, MULTICMT, MDIGIT)
+
+%ignore " "
+%ignore "\n"
+%ignore LINECMT
+%ignore MULTICMT
+
+
+
+
+
+// Expressions!!
+
+ADD: "+"
+SUB: "-"
+STAR: "*"
+DIV: "/"
+MOD: "%"
+AND: "&&"
+OR: "||"
+GR: ">"
+LS: "<"
+GRQ: "<="
+LSQ: ">="
+NOT: "!"
 
 number: LONG | INT | FLOAT | DOUBLE | HEX | BIN
 INT: "1".."9" MDIGIT*
@@ -8,22 +33,48 @@ FLOAT: DOUBLE ("f" | "F")
 HEX: "0x" (HEXDIGIT | "_")+
 BIN: "0b" ("0"|"1")+
 
-string: /"(.|(\.))*?"/
-longstring: /"""(.|(\.)|\n)*?"""/
-char: /'.|(\.)'/
-strings: string | longstring | char
+STRING: /"(.|(\.))*?"/
+LONGSTRING: /"""(.|(\.)|\n)*?"""/
+CHAR: /'.|(\.)'/
+strings: STRING | LONGSTRING | CHAR
 
 var: CNAME
+literal: number | strings | var
 
 prop: expr "." var
 param: "(" [expr] [("," expr)*] ")"
 call: expr param
-expr: number | strings | var | "(" expr ")" | prop | call
+expr: literal | "(" expr ")" | prop | call | _factor_op expr | compop | arithop
 
-%ignore " "
-%ignore "\n"
-%ignore LINECMT
-%ignore MULTICMT
+arithop: term (_add_op term)*
+term: expr (_mul_op expr)*
+compop: expr _comp_op expr
+_add_op: ADD | SUB
+_mul_op: STAR | DIV | MOD | var
+_factor_op: ADD | SUB | NOT
+_comp_op: GR | LS | GRQ | LSQ
 
-%import common (CNAME, HEXDIGIT)
-%import .utils (LINECMT, MULTICMT, MDIGIT)
+type: var | var "<" (type ["," type]) ">"
+
+
+
+
+
+// Statements!!
+
+IF: "if"
+ELSE: "else"
+FOR: "for"
+WHILE: "while"
+
+if_st: IF "(" expr ")" block (ELSE block)?
+for_st: FOR "(" var type? "in" expr ")" block
+while_st: WHILE "(" expr ")" block
+val_assign: "val" var type? "=" expr
+var_assign: "var" var type? "=" expr
+return: "return" expr?
+stmt: if_st | for_st | while_st | var_assign | val_assign | expr | return | stmt + ";"
+
+block: ("{" stmt* "}") | stmt
+
+start: block -> main
