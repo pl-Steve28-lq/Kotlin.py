@@ -6,12 +6,6 @@
 %ignore LINECMT
 %ignore MULTICMT
 
-
-
-
-
-// Expressions!!
-
 ADD: "+"
 SUB: "-"
 STAR: "*"
@@ -24,9 +18,20 @@ LS: "<"
 GRQ: "<="
 LSQ: ">="
 NOT: "!"
+PRIVATE: "private"
+PROTECTED: "protected"
+PUBLIC: "public"
+OVERRIDE: "override"
+INFIX: "infix"
+
+
+
+
+
+// Expressions!!
 
 number: LONG | INT | FLOAT | DOUBLE | HEX | BIN
-INT: "1".."9" MDIGIT*
+INT: ("1".."9" MDIGIT*) | "0"
 LONG: INT "L"
 DOUBLE: (INT "." MDIGIT+) | ("." MDIGIT+)
 FLOAT: DOUBLE ("f" | "F")
@@ -35,7 +40,7 @@ BIN: "0b" ("0"|"1")+
 
 STRING: /"(.|(\.))*?"/
 LONGSTRING: /"""(.|(\.)|\n)*?"""/
-CHAR: /'.|(\.)'/
+CHAR: /'(.|(\.))'/
 strings: STRING | LONGSTRING | CHAR
 
 var: CNAME
@@ -43,8 +48,9 @@ literal: number | strings | var
 
 prop: expr "." var
 param: "(" [expr] [("," expr)*] ")"
-call: expr param
-expr: literal | "(" expr ")" | prop | call | _factor_op expr | compop | arithop
+call.2: expr param
+generic_call: type param
+expr: literal | "(" expr ")" | prop | call | generic_call | _factor_op expr | compop | arithop | if
 
 arithop: term (_add_op term)*
 term: expr (_mul_op expr)*
@@ -56,25 +62,50 @@ _comp_op: GR | LS | GRQ | LSQ
 
 type: var | var "<" (type ["," type]) ">"
 
+if: "if" "(" expr ")" block "else" block
+
 
 
 
 
 // Statements!!
 
-IF: "if"
-ELSE: "else"
-FOR: "for"
-WHILE: "while"
+vartype: var ":" type
+vartypem: var [":" type]
 
-if_st: IF "(" expr ")" block (ELSE block)?
-for_st: FOR "(" var type? "in" expr ")" block
-while_st: WHILE "(" expr ")" block
-val_assign: "val" var type? "=" expr
-var_assign: "var" var type? "=" expr
-return: "return" expr?
-stmt: if_st | for_st | while_st | var_assign | val_assign | expr | return | stmt + ";"
+if_st: "if" "(" expr ")" block ["else" block]
+for_st: "for" "(" vartypem "in" expr ")" block
+while_st: "while" "(" expr ")" block
+cond_st: if_st | for_st | while_st
 
-block: ("{" stmt* "}") | stmt
+arg: [vartype] [("," vartype)*]
+basic_fun: "fun" var "(" arg ")" [":" type] (block | "=" expr)
+extend_fun: "fun" type "." var "(" arg ")" [":" type] (block | "=" expr)
+infix_fun: INFIX + "fun" type "." var "(" vartype ")" [":" type] (block | "=" expr)
+private_fun: PRIVATE fun_st
+protected_fun: PROTECTED fun_st
+public_fun: PUBLIC fun_st
+override_fun: OVERRIDE fun_st
+fun_st: basic_fun | extend_fun | infix_fun | private_fun | protected_fun | public_fun | override_fun
 
-start: block -> main
+val_assign: "val" vartypem "=" expr
+var_assign: "var" vartypem "=" expr
+def_assign: val_assign | var_assign
+re_assign: var "=" expr
+access_assign: (PRIVATE | PROTECTED | PUBLIC) def_assign
+assign_st: def_assign | re_assign | access_assign
+
+RETURN: "return"
+return.2: RETURN expr
+empty_return: RETURN
+
+overrided: ":" type [param]
+basic_class: "class" var [overrided] "{" stmt* "}"
+base_class: basic_class
+class_st: [PRIVATE | PROTECTED | PUBLIC] base_class
+
+stmt: return | empty_return | class_st | cond_st | fun_st | assign_st | stmt + ";" | expr
+
+block: ("{" stmt* "}") | stmt -> stmts
+
+start: block* -> main
