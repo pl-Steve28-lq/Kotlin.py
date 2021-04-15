@@ -1,12 +1,13 @@
 # Kotlin.py
 Kotlin Language Executer with Python!
 
-This project is empty yet.
+This project is Work In Progress.
 
 ## Goal
-- [ ] Lexer
-- [ ] Executer
-- [ ] Attempt LALR Parser
+- [ ] Implement Simplified Lexer
+- [ ] Lexing All Grammar Rules in Kotlin
+- [ ] Implement Executer (No JVM)
+- [ ] Attempt to use LALR Parser
 - [ ] JVM Bytecode...?
 
 ## Dependencies
